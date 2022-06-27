@@ -1,5 +1,6 @@
 html,
 body {
+  background-color: #316a7d;
   padding: 0;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
@@ -14,3 +15,279 @@ a {
 * {
   box-sizing: border-box;
 }
+
+#__next > div.Home_container__bCOhY > div {
+  color: white;
+}
+
+#wrapper1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+#card-1 {
+  padding: 50px;
+}
+
+#card-2 {
+  padding: 50px;
+}
+
+#card-3 {
+  padding: 50px;
+}
+
+#card-4 {
+  padding: 50px;
+}
+
+#card-5 {
+  padding: 50px;
+}
+
+#card-6 {
+  padding: 50px;
+}
+
+#card-7 {
+  padding: 50px;
+}
+
+#card-8 {
+  padding: 50px;
+}
+
+#wrapper2 {
+  padding: 100px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+#wrapper3 {
+  padding: 100px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+#widget {
+  position: absolute;
+  padding-left: 600px;
+}
+
+
+
+
+
+#navbar {
+  
+  
+    display: relative;
+    
+    justify-content: space-between;
+    
+    margin-left: 500px;
+    margin-right: 550px;
+}
+
+body {
+  font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 100%;
+  background-color: #316a7d;
+}
+
+h1,
+h2 {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 16px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+h2 {
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+/*- Card container -*/
+.card-container {
+  position: relative;
+  z-index: 1;
+  margin: 32px auto;
+  max-width: 720px;
+  height: 420px;
+  perspective: 1000px;
+}
+
+img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/*- Card body -*/
+.card-body {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: all .7s linear;
+}
+
+/*- Flipping the card -*/
+.card-container:hover .card-body {
+  transform: rotateY(180deg);
+}
+
+.card-container:hover > .card-body > .side-front {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1s ease-in, visibility .75s linear;
+}
+
+/*- Card sides -*/
+.card-side {
+  position: absolute;
+  top: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  color: #212121;
+  background-color: #fff;
+  backface-visibility: hidden;
+  box-shadow: 0 10px 35px rgba(50,50,93,.1),0 2px 15px rgba(0,0,0,.07);
+}
+
+/*- Front side -*/
+.side-front [class^=col-xs]:first-of-type {
+  padding-left: 0;
+}
+
+.side-front-content {
+  padding-top: 32px;
+  padding-right: 32px;
+  padding-bottom: 32px;
+}
+
+/*- Back side -*/
+.side-back {
+  z-index: 2;
+  padding: 32px;
+  text-align: center;
+  transform: rotateY(180deg);
+}
+
+/*- Form -*/
+.card-form {
+  margin-top: 32px;
+}
+
+.card-form .row + .row,
+.card-form .row + fieldset,
+.card-form fieldset + fieldset {
+  margin-top: 16px;
+}
+
+input,
+textarea {
+  padding: 8px;
+  width: 100%;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 1px solid #eee;
+  border-left: 0;
+  
+  
+}
+
+textarea {
+  max-height: 80px;
+  resize: vertical;
+}
+
+.btn-primary {
+  padding: 8px 16px;
+  font-size: 16px;
+  background-color: #0c81f6;
+  border: none;
+  box-shadow: 0 10px 35px rgba(50,50,93,.1),0 2px 15px rgba(0,0,0,.07);
+  transition: background-color .25s ease-in, box-shadow .25s ease-in;
+  
+ 
+}
+
+/*- Social links -*/
+.social-links {
+  padding: 0;
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+  list-style-type: none;
+  
+ 
+  
+ 
+  }
+  
+  i {
+    font-size: 24px;
+  }
+
+  .nav {
+    background-color: #333;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 2rem;
+    padding: 0 1rem;
+  }
+  
+  .site-title {
+    font-size: 2rem;
+  }
+  
+  .nav ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: flex;
+    gap: 1rem;
+    
+  }
+  
+  .nav a {
+    color: inherit;
+    text-decoration: none;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: .25rem;
+  }
+  
+  .nav li.active {
+    background-color: #555;
+  }
+  
+  .nav li:hover {
+    background-color: #777;
+  }
+
+  #__next > div.Home_container__bCOhY > nav > div > div > button, 
+  #__next > div.Home_container__bCOhY > div:nth-child(2)
+   {
+    position: relative;
+    left: 620px;
+    top: 20px;
+    color: #0d0f0d;
+    
+
+  }
+
