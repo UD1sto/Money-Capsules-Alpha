@@ -13,7 +13,6 @@ import "hardhat-contract-sizer";
 dotenv.config();
 
 const MUMBAI_RPC_URL = process.env.MUMBAI_RPC_URL;
-const ROPSTEN_RPC_URL = process.env.ROPSTEN_RPC_URL;
 const POLYGON_MAINNET_RPC_URL = process.env.POLYGON_MAINNET_RPC_URL;
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
@@ -52,7 +51,6 @@ const config: HardhatUserConfig = {
     etherscan: {
         apiKey: {
             rinkeby: ETHERSCAN_API_KEY!,
-            ropsten: ETHERSCAN_API_KEY!,
             polygonMumbai: POLYGONSCAN_API_KEY!,
         },
     },
@@ -76,12 +74,7 @@ const config: HardhatUserConfig = {
             {
                 version: "0.8.7",
             },
-            {
-                version: "0.6.6",
-            },
-            {
-                version: "0.4.24",
-            },
+            
         ],
     },
     mocha: {
