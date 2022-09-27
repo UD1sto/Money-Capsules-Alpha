@@ -1,65 +1,68 @@
-import { BigNumber, Contract, ContractFactory } from "ethers";
+import { BigNumber, Signer } from "ethers";
 import { expect, assert } from "chai";
+import {
+    GenericERC20,
+    CapsuleFactory,
+    ERC20Capsule,
+    NftCapsule,
+    MixedCapsule,
+    GenericERC20__factory,
+    CapsuleFactory__factory,
+    ERC20Capsule__factory,
+    NftCapsule__factory,
+    MixedCapsule__factory,
+} from "../typechain";
 const { ethers, network } = require("hardhat");
 
 describe("capsule unit tests", function () {
     const amount1 = ethers.utils.parseEther("1000");
-    let capsuleFactory: Contract,
-        erc20Capsule: Contract,
-        nftCapsule: Contract,
-        mixedCapsule: Contract,
-        wethToken: Contract,
-        usdcToken: Contract,
-        wbtcToken: Contract,
-        daiToken: Contract,
-        user: Contract,
-        user2: Contract;
+    let capsuleFactory: CapsuleFactory,
+        erc20Capsule: ERC20Capsule,
+        nftCapsule: NftCapsule,
+        mixedCapsule: MixedCapsule,
+        WETH: GenericERC20,
+        USDT: GenericERC20,
+        USDC: GenericERC20,
+        DAI: GenericERC20,
+        user: Signer,
+        user2: Signer;
 
     beforeEach(async function () {
         const accounts = await ethers.getSigners(2);
         user = accounts[0];
         user2 = accounts[1];
 
-        const wethTokenFactory: ContractFactory = await ethers.getContractFactory("WETH");
-        wethToken = await wethTokenFactory.deploy();
-        // prettier-ignore
-        await wethToken.deployed();
+        const erc20Factory: GenericERC20__factory = await ethers.getContractFactory(
+            "GenericERC20"
+        );
 
-        const daiTokenFactory: ContractFactory = await ethers.getContractFactory("DAI");
-        daiToken = await daiTokenFactory.deploy();
-        // prettier-ignore
-        await daiToken.deployed();
+        DAI = await erc20Factory.deploy("DAI", "DAI", "18");
+        USDC = await erc20Factory.deploy("USDC", "USDC", "6");
+        USDT = await erc20Factory.deploy("USDT", "USDT", "6");
+        WETH = await erc20Factory.deploy("WETH", "WETH", "18");
 
-        const usdcTokenFactory: ContractFactory = await ethers.getContractFactory("USDC");
-        usdcToken = await usdcTokenFactory.deploy();
-        // prettier-ignore
-        await usdcToken.deployed();
-
-        const wbtcTokenFactory: ContractFactory = await ethers.getContractFactory("WBTC");
-        wbtcToken = await wbtcTokenFactory.deploy();
-        // prettier-ignore
-        await wbtcToken.deployed();
-
-        const capsuleFactoryContract: ContractFactory = await ethers.getContractFactory(
+        const capsuleFactoryContract: CapsuleFactory__factory = await ethers.getContractFactory(
             "CapsuleFactory"
         );
         capsuleFactory = await capsuleFactoryContract.deploy();
-        // prettier-ignore
         await capsuleFactory.deployed();
 
-        const erc20CapsuleContract = await ethers.getContractFactory("ERC20Capsule");
+        const erc20CapsuleContract: ERC20Capsule__factory = await ethers.getContractFactory(
+            "ERC20Capsule"
+        );
         erc20Capsule = await erc20CapsuleContract.deploy();
-        // prettier-ignore
         await erc20Capsule.deployed();
 
-        const nftCapsuleContract = await ethers.getContractFactory("NftCapsule");
+        const nftCapsuleContract: NftCapsule__factory = await ethers.getContractFactory(
+            "NftCapsule"
+        );
         nftCapsule = await nftCapsuleContract.deploy();
-        // prettier-ignore
         await nftCapsule.deployed();
 
-        const mixedCapsuleContract = await ethers.getContractFactory("MixedCapsule");
+        const mixedCapsuleContract: MixedCapsule__factory = await ethers.getContractFactory(
+            "MixedCapsule"
+        );
         mixedCapsule = await mixedCapsuleContract.deploy();
-        // prettier-ignore
         await mixedCapsule.deployed();
     });
 
