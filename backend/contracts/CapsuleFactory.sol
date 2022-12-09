@@ -5,17 +5,20 @@ import "./ERC20Capsule.sol";
 import "./NftCapsule.sol";
 import "./MixedCapsule.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract CapsuleFactory {
+contract CapsuleFactory is Ownable {
     address private immutable erc20WalletImplementation;
     address private immutable nftWalletImplementation;
     address private immutable mixedWalletImplementation;
+    uint256 private price;
 
     event erc20CapsuleCreation(address cloneAddress, address ownedBy);
     event nftCapsuleCreation(address cloneAddress, address ownedBy);
     event mixedCapsuleCreation(address cloneAddress, address ownedBy);
 
-    constructor() {
+    constructor(uint256 _price) {
+        price = _price;
         erc20WalletImplementation = address(new ERC20Capsule());
         nftWalletImplementation = address(new NftCapsule());
         mixedWalletImplementation = address(new MixedCapsule());
@@ -35,10 +38,19 @@ contract CapsuleFactory {
         emit nftCapsuleCreation(clone, msg.sender);
     }
 
-    function createMixedCapsule() external {
+    function createMixedCapsule() external payable {
+        require(msg.value >= price, "Insufficient paid amount");
         address clone = Clones.clone(mixedWalletImplementation);
         MixedCapsule(clone).initialize();
         MixedCapsule(clone).transferOwnership(msg.sender);
         emit mixedCapsuleCreation(clone, msg.sender);
+    }
+
+    function changePrice(uint256 _price) external onlyOwner {
+        price = _price;
+    }
+
+    function getPrice() public returns (uint256 _price) {
+        _price = price;
     }
 }
