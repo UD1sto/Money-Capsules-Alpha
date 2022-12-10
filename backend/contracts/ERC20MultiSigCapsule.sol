@@ -40,7 +40,7 @@ contract ERC20MultiSigCapsule is ReentrancyGuard, Initializable, Context {
     }
 
     modifier onlyOwner() {
-        require(isOwner[msg.sender] || msg.sender == address(this), "Not owner");
+        require(isOwner[msg.sender], "Not owner");
         _;
     }
 
