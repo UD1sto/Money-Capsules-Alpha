@@ -24,6 +24,7 @@ contract ERC20Capsule is OwnableUpgradeable {
     ) external initializer {
         __Ownable_init();
         for (uint256 i = 0; i < tokens.length; i++) {
+            // mapping token address => chainlink price feeds
             s_priceFeeds[tokens[i]] = AggregatorV3Interface(priceFeeds[i]);
         }
         SwappingContract = swappingAddress;
@@ -38,6 +39,7 @@ contract ERC20Capsule is OwnableUpgradeable {
 
     //transfer ownership is used to transfer the contract/capsule ownership
     function transferOwnership(address newOwner) public override {
+        // * can only be called by the owner or the SwappingContract
         require(msg.sender == owner() || msg.sender == SwappingContract, "Ownable: not owner");
         require(newOwner != address(0), "Ownable: new owner is the zero address");
         _transferOwnership(newOwner);
