@@ -6,8 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-// make another contract for swapping
-
 //smart contract used as multycurrency storage space, the logic here is to minimize multycurrency gas fees.
 //This is possible because currency transfers directly go to the smart contract address. When the smart contract owner
 //wants to transfer the multiple currencies inside the smart contract all he needs to do is to transfer ownership of the smart contract
@@ -17,12 +15,18 @@ contract ERC20Capsule is OwnableUpgradeable {
     address public segment3;
     address[] private s_tokens;
     mapping(address => AggregatorV3Interface) private s_priceFeeds;
+    address private SwappingContract;
 
-    function initialize(address[] memory tokens, address[] memory priceFeeds) external initializer {
+    function initialize(
+        address[] memory tokens,
+        address[] memory priceFeeds,
+        address swappingAddress
+    ) external initializer {
         __Ownable_init();
         for (uint256 i = 0; i < tokens.length; i++) {
             s_priceFeeds[tokens[i]] = AggregatorV3Interface(priceFeeds[i]);
         }
+        SwappingContract = swappingAddress;
     }
 
     function deposit(address token, uint amount) external payable {
@@ -30,12 +34,11 @@ contract ERC20Capsule is OwnableUpgradeable {
         s_tokens.push(token);
     }
 
-
     // * Not adding remove tokenAddress from s_tokens as it will not create any significant dif and will increase gas price
 
-
     //transfer ownership is used to transfer the contract/capsule ownership
-    function transferOwnership(address newOwner) public override onlyOwner {
+    function transferOwnership(address newOwner) public override {
+        require(msg.sender == owner() || msg.sender == SwappingContract, "Ownable: not owner");
         require(newOwner != address(0), "Ownable: new owner is the zero address");
         _transferOwnership(newOwner);
     }

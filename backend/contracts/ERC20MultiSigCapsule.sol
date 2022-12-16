@@ -55,10 +55,10 @@ contract ERC20MultiSigCapsule is ReentrancyGuard, Initializable, Context {
     event Revoke(address indexed caller, uint256 indexed txId);
     event Withdraw(address indexed to, uint256 indexed txId, address from, uint256 indexed value);
 
-    function initialize(address[] memory _owners, uint256 _requiredApprovals)
-        external
-        initializer
-    {
+    function initialize(
+        address[] memory _owners,
+        uint256 _requiredApprovals
+    ) external initializer {
         owners = _owners;
         requiredApprovals = _requiredApprovals;
 
@@ -87,23 +87,14 @@ contract ERC20MultiSigCapsule is ReentrancyGuard, Initializable, Context {
         emit Revoke(msg.sender, _txId);
     }
 
-    function _safeTranfer(
-        address token,
-        address to,
-        uint256 amount
-    ) internal {
+    function _safeTranfer(address token, address to, uint256 amount) internal {
         (bool success, bytes memory data) = token.call(
             abi.encodeWithSelector(T_SELECTOR, to, amount)
         );
         require(success && (data.length == 0 || abi.decode(data, (bool))), "Transfer Failed!");
     }
 
-    function _safeTranferFrom(
-        address token,
-        address from,
-        address to,
-        uint256 amount
-    ) internal {
+    function _safeTranferFrom(address token, address from, address to, uint256 amount) internal {
         (bool success, bytes memory data) = token.call(
             abi.encodeWithSelector(TF_SELECTOR, from, to, amount)
         );
@@ -147,23 +138,14 @@ contract ERC20MultiSigCapsule is ReentrancyGuard, Initializable, Context {
         emit Request(_txId, msg.sender);
     }
 
-    function deposit(
-        address token,
-        address from,
-        address to,
-        uint256 amount
-    ) external payable {
+    function deposit(address token, address from, address to, uint256 amount) external payable {
         _safeTranferFrom(token, from, to, amount);
         emit Deposit(msg.sender, amount);
     }
 
-    function withdraw(uint256 _txId)
-        external
-        onlyOwner
-        notExecuted(_txId)
-        isApproved(_txId)
-        nonReentrant
-    {
+    function withdraw(
+        uint256 _txId
+    ) external onlyOwner notExecuted(_txId) isApproved(_txId) nonReentrant {
         address to = transactions[_txId].to;
         uint256 value = transactions[_txId].value;
 
