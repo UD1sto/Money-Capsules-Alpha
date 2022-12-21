@@ -5,6 +5,7 @@ pragma solidity 0.8.7;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "./AssetRegistry.sol";
 
 //smart contract used as multycurrency storage space, the logic here is to minimize multycurrency gas fees.
 //This is possible because currency transfers directly go to the smart contract address. When the smart contract owner
@@ -16,18 +17,15 @@ contract ERC20Capsule is OwnableUpgradeable {
     address[] private s_tokens;
     mapping(address => AggregatorV3Interface) private s_priceFeeds;
     address private SwappingContract;
+    address private RegistryAddress;
 
     function initialize(
-        address[] memory tokens,
-        address[] memory priceFeeds,
+        address registryAddress,
         address swappingAddress
     ) external initializer {
         __Ownable_init();
-        for (uint256 i = 0; i < tokens.length; i++) {
-            // mapping token address => chainlink price feeds
-            s_priceFeeds[tokens[i]] = AggregatorV3Interface(priceFeeds[i]);
-        }
         SwappingContract = swappingAddress;
+        RegistryAddress = registryAddress;
     }
 
     function deposit(address token, uint amount) external payable {
@@ -125,14 +123,8 @@ contract ERC20Capsule is OwnableUpgradeable {
 
     function getTotalAssetValueInUsd(address user) external view returns (uint256 totalValue) {
         for (uint256 i = 0; i < s_tokens.length; i++) {
-            (uint256 price, uint256 decimals) = getLatestPrice(s_tokens[i]);
+            (uint256 price, uint256 decimals) = AssetRegistry(RegistryAddress).getLatestPrice(s_tokens[i]);
             totalValue += ((price * IERC20(s_tokens[i]).balanceOf(user))) / 10 ** decimals;
         }
-    }
-
-    function getLatestPrice(address tokenAddress) public view returns (uint256, uint256) {
-        (, int256 price, , , ) = s_priceFeeds[tokenAddress].latestRoundData();
-        uint256 decimals = uint256(s_priceFeeds[tokenAddress].decimals());
-        return (uint256(price), decimals);
     }
 }

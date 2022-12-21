@@ -12,9 +12,8 @@ contract CapsuleFactory is Ownable {
     address private immutable nftWalletImplementation;
     address private immutable mixedWalletImplementation;
     uint256 private price;
-    address[] private s_tokens;
-    address[] private s_priceFeeds;
     address private immutable SWAPPING_CONTRACT;
+    address private immutable ASSET_REGISTRY;
 
     event erc20CapsuleCreation(address cloneAddress, address ownedBy);
     event nftCapsuleCreation(address cloneAddress, address ownedBy);
@@ -22,13 +21,11 @@ contract CapsuleFactory is Ownable {
 
     constructor(
         uint256 _price,
-        address[] memory tokens,
-        address[] memory priceFeeds,
+        address assetRegistry,
         address swappingAddress
     ) {
         price = _price;
-        s_tokens = tokens;
-        s_priceFeeds = priceFeeds;
+        ASSET_REGISTRY = assetRegistry;
         SWAPPING_CONTRACT = swappingAddress;
         erc20WalletImplementation = address(new ERC20Capsule());
         nftWalletImplementation = address(new NftCapsule());
@@ -37,7 +34,7 @@ contract CapsuleFactory is Ownable {
 
     function createERC20Capsule() external {
         address clone = Clones.clone(erc20WalletImplementation);
-        ERC20Capsule(clone).initialize(s_tokens, s_priceFeeds, SWAPPING_CONTRACT);
+        ERC20Capsule(clone).initialize(ASSET_REGISTRY, SWAPPING_CONTRACT);
         ERC20Capsule(clone).transferOwnership(msg.sender);
         emit erc20CapsuleCreation(clone, msg.sender);
     }
