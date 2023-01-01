@@ -5,7 +5,6 @@ pragma solidity 0.8.7;
 import "./ERC20Capsule.sol";
 
 contract Swap {
-
     // * A struct that will store the requests for swapping
     struct SwapInfo {
         address user1;
@@ -19,9 +18,15 @@ contract Swap {
     mapping(address => mapping(address => SwapInfo)) private swaps;
 
     // * Here user 1 will come and request to swap capule with user 2
-    function requestSwap(address msgSenderCapsule, address swapWithUser, address userCapsule) external {
+    function requestSwap(
+        address msgSenderCapsule,
+        address swapWithUser,
+        address userCapsule
+    ) external {
         require(
-            swapWithUser != address(0) || userCapsule != address(0) || msgSenderCapsule != address(0),
+            swapWithUser != address(0) ||
+                userCapsule != address(0) ||
+                msgSenderCapsule != address(0),
             "Zero address not allowed"
         );
         swaps[msg.sender][swapWithUser] = SwapInfo(

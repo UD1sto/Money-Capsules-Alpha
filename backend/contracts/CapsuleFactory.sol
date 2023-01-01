@@ -19,11 +19,7 @@ contract CapsuleFactory is Ownable {
     event nftCapsuleCreation(address cloneAddress, address ownedBy);
     event mixedCapsuleCreation(address cloneAddress, address ownedBy);
 
-    constructor(
-        uint256 _price,
-        address assetRegistry,
-        address swappingAddress
-    ) {
+    constructor(uint256 _price, address assetRegistry, address swappingAddress) {
         price = _price;
         ASSET_REGISTRY = assetRegistry;
         SWAPPING_CONTRACT = swappingAddress;

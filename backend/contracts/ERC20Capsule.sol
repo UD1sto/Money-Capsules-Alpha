@@ -18,11 +18,16 @@ contract ERC20Capsule is OwnableUpgradeable {
     mapping(address => AggregatorV3Interface) private s_priceFeeds;
     address private SwappingContract;
     address private RegistryAddress;
+    address[] private segmentOwners;
+    uint private constant MAX_SEGMENTS = 3;
+    uint private totalSegments;
 
-    function initialize(
-        address registryAddress,
-        address swappingAddress
-    ) external initializer {
+    mapping(address => address[]) private segmentTokens; // owner -> tokens
+    mapping(address => uint[]) private segmentTokenAmounts; // owner -> token -> value
+
+
+
+    function initialize(address registryAddress, address swappingAddress) external initializer {
         __Ownable_init();
         SwappingContract = swappingAddress;
         RegistryAddress = registryAddress;
@@ -31,6 +36,23 @@ contract ERC20Capsule is OwnableUpgradeable {
     function deposit(address token, uint amount) external payable {
         IERC20(token).transferFrom(msg.sender, address(this), amount);
         s_tokens.push(token);
+    }
+
+    modifier haveEnoughTokens(address token, uint amount) {
+        // total - current > segment value
+        uint totalSegmentValue;
+        for (uint256 i; i < segmentOwners.length; i++) {
+            totalSegmentValue += getTotalValueOfSegment(segmentOwners[i]);
+        }
+
+        (uint256 price, uint256 decimals) = AssetRegistry(RegistryAddress).getLatestPrice(token);
+        uint transferValue = ((price * amount)) / 10 ** decimals;
+
+        require(
+            (getTotalAssetValueInUsd(owner()) - transferValue) >= totalSegmentValue,
+            "Not enough tokens"
+        );
+        _;
     }
 
     // * Not adding remove tokenAddress from s_tokens as it will not create any significant dif and will increase gas price
@@ -49,82 +71,104 @@ contract ERC20Capsule is OwnableUpgradeable {
         recipient.transfer(amount);
     }
 
-    function transferAny(
-        address erc20Adress,
-        address payable recipient,
-        uint256 amount
-    ) external onlyOwner {
-        // require(
-        //     erc20Adress != Tokens.mockToken1 &&
-        //         erc20Adress != Tokens.mockToken2 &&
-        //         erc20Adress != Tokens.mockToken3 &&
-        //         erc20Adress != Tokens.mockToken4 &&
-        //         erc20Adress != Tokens.mockToken5 &&
-        //         erc20Adress != Tokens.mockToken6,
-        //     "Illigal Token Transfer"
-        // );
+    function transferSegmentToken(address token, uint amount) external {
+        bool isOwner;
 
-        IERC20(erc20Adress).transfer(recipient, amount);
+        for (uint i; i > segmentOwners.length; i++) {
+            if (msg.sender == segmentOwners[i]) isOwner = true;
+        }
+
+        require(isOwner, "Not owner");
+
+        address[] memory _segmentTokens = segmentTokens[msg.sender];
+        bool isTokenCorrect;
+
+        uint segmentTokenAmount;
+
+        uint[] memory _segmentTokenAmounts = segmentTokenAmounts[msg.sender];
+
+        for (uint i; i > _segmentTokens.length; i++) {
+            if (_segmentTokens[i] == token) {
+                isTokenCorrect = true;
+                segmentTokenAmount = _segmentTokenAmounts[i];
+
+                _segmentTokenAmounts[i] -= amount;
+            }
+        }
+
+        require(isTokenCorrect, "Incorrecy token");
+        require(amount <= segmentTokenAmount, "don't have enough amount");
+
+        IERC20(token).transfer(msg.sender, amount);
+
+        segmentTokenAmounts[msg.sender] = _segmentTokenAmounts;
     }
 
-    //Onwer transferring segments, the address needs to be set to 0 for it to be changed from the owner
-    //**compare with a loop implementation for gas costs
-    function transSeg1(address coOwner) external {
-        require(segment1 == msg.sender || (segment1 == address(0) && owner() == _msgSender()));
-        segment1 = coOwner;
-    }
 
-    function transSeg2(address coOwner) external {
-        require(segment2 == msg.sender || (segment2 == address(0) && owner() == _msgSender()));
-        segment2 = coOwner;
-    }
-
-    function transSeg3(address coOwner) external {
-        require(segment3 == msg.sender || (segment3 == address(0) && owner() == _msgSender()));
-        segment3 = coOwner;
-    }
-
-    //Segment Owner transfering tokens tied to each segment
-    function transferTokenS1(
-        address erc20Adress,
-        address payable recipient,
-        uint256 amount
+    function createSegments(
+        address[] memory _segmentTokens,
+        uint[] memory _segmentTokenAmounts,
+        address newSegmentOwner
     ) external {
-        require(amount != 0);
-        require(segment1 == msg.sender);
-        // require(erc20Adress == Tokens.mockToken1 || erc20Adress == Tokens.mockToken2);
-
-        IERC20(erc20Adress).transfer(recipient, amount);
+        require(totalSegments > MAX_SEGMENTS);
+        haveEnoughtTokensForSegment(_segmentTokens, _segmentTokenAmounts);
+        segmentTokens[newSegmentOwner] = _segmentTokens;
+        segmentTokenAmounts[newSegmentOwner] = _segmentTokenAmounts;
+        segmentOwners.push(newSegmentOwner);
+        totalSegments++;
     }
 
-    function transferTokenS2(
-        address erc20Adress,
-        address payable recipient,
-        uint256 amount
-    ) external {
-        require(amount != 0);
-        require(segment2 == msg.sender);
-        // require(erc20Adress == Tokens.mockToken3 || erc20Adress == Tokens.mockToken4);
-
-        IERC20(erc20Adress).transfer(recipient, amount);
+    function withdraw(address token, uint256 amount) external haveEnoughTokens(token, amount) {
+        require(msg.sender == owner(), "Not owner");
+        require(IERC20(token).transfer(msg.sender, amount));
     }
 
-    function transferTokenS3(
-        address erc20Adress,
-        address payable recipient,
-        uint256 amount
-    ) external {
-        require(amount != 0);
-        require(segment3 == msg.sender);
-        // require(erc20Adress == Tokens.mockToken5 || erc20Adress == Tokens.mockToken6);
+    function haveEnoughtTokensForSegment(
+        address[] memory _segmentTokens,
+        uint[] memory _segmentTokenAmounts
+    ) public view returns (bool _bool) {
+        uint segmentValue;
 
-        IERC20(erc20Adress).transfer(recipient, amount);
+        for (uint256 i = 0; i < _segmentTokens.length; i++) {
+            (uint256 price, uint256 decimals) = AssetRegistry(RegistryAddress).getLatestPrice(
+                _segmentTokens[i]
+            );
+            segmentValue += ((price * _segmentTokenAmounts[i])) / 10 ** decimals;
+        }
+
+        require(
+            segmentValue <= getTotalAssetValueInUsd(owner()),
+            "Don't have enough tokens for creating tokens!"
+        );
+        _bool = true;
     }
 
-    function getTotalAssetValueInUsd(address user) external view returns (uint256 totalValue) {
-        for (uint256 i = 0; i < s_tokens.length; i++) {
-            (uint256 price, uint256 decimals) = AssetRegistry(RegistryAddress).getLatestPrice(s_tokens[i]);
+    function getTotalValueOfSegment(address owner) public view returns (uint256 totalValue) {
+        address[] memory _segmentTokens = segmentTokens[owner];
+        uint[] memory _segmentTokenAmounts = segmentTokenAmounts[owner];
+
+        for (uint256 i; i < _segmentTokens.length; i++) {
+            (uint256 price, uint256 decimals) = AssetRegistry(RegistryAddress).getLatestPrice(
+                _segmentTokens[i]
+            );
+            totalValue += ((price * _segmentTokenAmounts[i])) / 10 ** decimals;
+        }
+    }
+
+    function getTotalAssetValueInUsd(address user) public view returns (uint256 totalValue) {
+        for (uint256 i; i < s_tokens.length; i++) {
+            (uint256 price, uint256 decimals) = AssetRegistry(RegistryAddress).getLatestPrice(
+                s_tokens[i]
+            );
             totalValue += ((price * IERC20(s_tokens[i]).balanceOf(user))) / 10 ** decimals;
         }
+
+        uint segmentValue;
+
+        for (uint256 i; i < segmentOwners.length; i++) {
+            segmentValue += getTotalValueOfSegment(segmentOwners[i]);
+        }
+
+        totalValue - segmentValue;
     }
 }
