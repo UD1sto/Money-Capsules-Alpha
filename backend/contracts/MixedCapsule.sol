@@ -109,11 +109,7 @@ contract MixedCapsule is OwnableUpgradeable {
         IERC20(erc20Adress).transfer(recipient, amount);
     }
 
-    function withdraw721(
-        address nft721,
-        address to,
-        uint256 id
-    ) public onlyOwner {
+    function withdraw721(address nft721, address to, uint256 id) public onlyOwner {
         IERC721(nft721).transferFrom(address(this), to, id);
     }
 

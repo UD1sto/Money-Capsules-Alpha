@@ -16,7 +16,6 @@ const MUMBAI_RPC_URL = process.env.MUMBAI_RPC_URL;
 const POLYGON_MAINNET_RPC_URL = process.env.POLYGON_MAINNET_RPC_URL;
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const RINKEBY_RPC_URL = process.env.RINKEBY_RPC_URL;
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
@@ -34,12 +33,6 @@ const config: HardhatUserConfig = {
         },
         localhost: {
             chainId: 31337,
-        },
-        rinkeby: {
-            url: RINKEBY_RPC_URL,
-            accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
-            saveDeployments: true,
-            chainId: 4,
         },
         mumbai: {
             url: MUMBAI_RPC_URL,
@@ -74,7 +67,6 @@ const config: HardhatUserConfig = {
             {
                 version: "0.8.7",
             },
-            
         ],
     },
     mocha: {
